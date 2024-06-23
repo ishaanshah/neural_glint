@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Neural Histogram-Based Glint Rendering of Surfaces With Spatially Varying Roughness">
+  <meta name="keywords" content="Glints, Spherical Harmonics, SH, Neural Networks">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neural Histogram-Based Glint Rendering of Surfaces With Spatially Varying Roughness</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+    <!-- Make sure to load the highlight.js CSS file before the Diff2Html CSS file -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/github.min.css" />
+  <link rel="stylesheet" href="./static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+
+  <!-- Stuff needed for interactive viewer -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,600" rel="stylesheet" type="text/css"/>
+  <!-- <link href="./static/js/utils/report.css" rel="stylesheet"/> -->
+  <script type="text/javascript" src="https://kit.fontawesome.com/b3ad2626f1.js"></script>
+  <script type="text/javascript" src="scenes/bistro-interior-(etd)/data.js"></script>
+  <script type="text/javascript" src="./static/js/utils/react.js"></script>
+  <script type="text/javascript" src="./static/js/utils/react-dom.js"></script>
+  <script type="text/javascript" src="./static/js/utils/ImageBox.js"></script>
+  <script type="text/javascript" src="./static/js/utils/Chart.js"></script>
+  <script type="text/javascript" src="./static/js/utils/ChartBox.js"></script>
+  <script type="text/javascript" src="./static/js/utils/TableBox.js"></script>
+  <script type="text/javascript" src="./static/js/utils/CopyrightBox.js"></script>
+  <script type="text/javascript" src="./static/js/utils/jeri.js"></script>
+  <script type="text/javascript" src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script type="text/javascript" src="./static/js/utils/PlotBox.js"></script>
+  <script type="text/javascript" src="./static/js/interactive_viewer.js"></script>
+  <link rel="stylesheet" href="./static/css/interactive_viewer.css">
+</head>
+
+<body onload="setup();">
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-widescreen">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Neural Histogram-Based Glint Rendering of Surfaces With Spatially Varying Roughness</h1>
+          <h2 class="is-size-4">EGSR 2024</h2>
+          <h2 class="is-size-4">Computer Graphics Forum</h2>
+          </br>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://ishaanshah.xyz">Ishaan Shah<sup>1</sup></a>,
+            </span>
+            <span class="author-block">
+              <a href="https://lc.fie.umich.mx/~legg/">Luis E. Gamboa<sup>2</sup></a>,
+            </span>
+            <span class="author-block">
+              <a href="https://profs.etsmtl.ca/agruson/">Adrien Gruson<sup>3</sup></a>,
+            </span>
+            <span class="author-block">
+              <a href="https://faculty.iiit.ac.in/~pjn/">P. J. Narayanan<sup>1</sup></a>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>IIIT Hyderabad,</span>
+            <span class="author-block"><sup>2</sup>UMSNH, Mexico,</span>
+            <span class="author-block"><sup>3</sup>ÉTS Montreal</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="https://ishaanshah.github.io/assets/pdfs/neural_glint_full.pdf"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper - 130MB</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://ishaanshah.github.io/assets/pdfs/neural_glint_comp.pdf"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper - 15 MB </span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <!-- <span class="link-block">
+                <a href="https://github.com/ishaanshah/risltc"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span> -->
+              <!-- Dataset Link. -->
+              <!-- <span class="link-block">
+                <a href="https://iiitaphyd-my.sharepoint.com/:u:/g/personal/ishaan_shah_research_iiit_ac_in/ERx-EfBnIhlBpm0Xv4RrD-gBF7yEmBCMNhPgw_GNRw5yyA?e=dFe7Vz"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="far fa-images"></i>
+                  </span>
+                  <span>Scenes</span>
+                </a>
+              </span> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero">
+  <div class="container is-widescreen">
+      <img id="teaser" width="100%" src="./static/images/teaser.jpg" />
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-widescreen">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          The complex, glinty appearance of detailed normal-mapped surfaces at different scales requires expensive per-pixel Normal Distribution Function computations. Moreover, large light sources further compound this integration and increase the noise in the Monte Carlo renderer.
+          Specialized rendering techniques that explicitly express the underlying normal distribution have been developed to improve performance for glinty surfaces controlled by a fixed material roughness.
+          We present a new method that supports spatially varying roughness based on a neural histogram that computes per-pixel NDFs with arbitrary positions and sizes. 
+          Our representation is both memory and compute efficient. 
+          Additionally, we fully integrate direct illumination for all light directions in constant time.
+          Our approach decouples roughness and normal distribution, allowing the live editing of the spatially varying roughness of complex normal-mapped objects.
+          We demonstrate that our approach improves on previous work by achieving smaller footprints while offering GPU-friendly computation and compact representation.
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">Video</h2>
+        <div class="publication-video">
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/GVtv5ZE3tcs?si=m0AYKHJkm1uBS5R9" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- <section class="section">
+  <div class="container is-widescreen">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">Results</h2>
+        <div class="content has-text-justified">
+          We use three scenes with varying number and sizes of area lights
+          for the evaluation: (1) <b>Zero-Day, 10K lights</b>, (2) <b>Bistro Interior, 2K
+          lights</b> and (3) <b>Bistro Exterior, 30K lights</b>. For each scene, we test
+          the method on a diffuse and glossy version of the scene. We compare our results
+          against the following four methods:
+          <ul>
+            <li><b>Uniform</b>: Uniform light & uniform area sampling</li>
+            <li><b>ProjLTC</b>: Uniform light sampling & Projecte Solid Angle Sampling [Peters, 2021]</li>
+            <li><b>RIS</b>: RIS with uniform light & uniform area sampling [Tablot 2005, Bitterli 2020]</li>
+            <li><b>RIS-ProjLTC</b>: Naïve combination of RIS with ProjLTC</li>
+          </ul>
+        </div>
+        <div class="content" id="content-time">
+          <h4 class="title is-4">Equal Time Comparsion</h4>
+          <div class="image-box" id="image-box-time"></div>
+        </div>
+        <div class="content" id="content-sample">
+          <h4 class="title is-4">Equal Sample Comparsion</h4>
+          <div class="image-box" id="image-box-sample"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section> -->
+
+<section class="section">
+  <div class="container is-widescreen">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full">
+        <h2 class="title is-3">References</h2>
+        <div class="content has-text-justified">
+          <ol>
+            <li>[GGN18] Gamboa L. E., Guertin J. P., Nowrouzezahrai D. Scalable appearance filtering for complex lighting effects. SIGGRAPH Asia 2018. <a href="https://doi.org/10/ggfg4g">doi:10/ggfg4g.</a></li>
+          </ol>
+       </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- <section class="section" id="BibTeX">
+  <div class="container is-widescreen">
+    <div class="columns">
+      <div class="column is-full">
+	  <h2 class="title is-3">BibTeX</h2>
+	  <pre><code>@inproceedings{10.1145/3610543.3626165,
+	author = {Shah, Ishaan Nikhil and KT, Aakash and Narayanan, P. J.},
+	title = {Combining Resampled Importance and Projected Solid Angle Samplings for Many Area Light Rendering},
+	year = {2023},
+	isbn = {9798400703140},
+	publisher = {Association for Computing Machinery},
+	address = {New York, NY, USA},
+	url = {https://doi.org/10.1145/3610543.3626165},
+	doi = {10.1145/3610543.3626165},
+	booktitle = {SIGGRAPH Asia 2023 Technical Communications},
+	articleno = {2},
+	numpages = {4},
+	location = {<conf-loc>, <city>Sydney</city>, <state>NSW</state>, <country>Australia</country>, </conf-loc>},
+	series = {SA '23}
+}</code></pre>
+      </div>
+    </div>
+  </div>
+</section> -->
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Website template has been borrowed and modified from <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
