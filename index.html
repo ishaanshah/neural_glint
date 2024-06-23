@@ -31,7 +31,7 @@
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,600" rel="stylesheet" type="text/css"/>
   <!-- <link href="./static/js/utils/report.css" rel="stylesheet"/> -->
   <script type="text/javascript" src="https://kit.fontawesome.com/b3ad2626f1.js"></script>
-  <script type="text/javascript" src="scenes/bistro-interior-(etd)/data.js"></script>
+  <script type="text/javascript" src="scenes/cutlery/data.js"></script>
   <script type="text/javascript" src="./static/js/utils/react.js"></script>
   <script type="text/javascript" src="./static/js/utils/react-dom.js"></script>
   <script type="text/javascript" src="./static/js/utils/ImageBox.js"></script>
@@ -81,7 +81,7 @@
             <div class="publication-links">
               <!-- PDF Link. -->
               <span class="link-block">
-                <a href="https://ishaanshah.github.io/assets/pdfs/neural_glint_full.pdf"
+                <a href="https://ishaanshah.github.io/assets/pdfs/neural_glints_full.pdf"
                    class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                       <i class="fas fa-file-pdf"></i>
@@ -90,7 +90,7 @@
                 </a>
               </span>
               <span class="link-block">
-                <a href="https://ishaanshah.github.io/assets/pdfs/neural_glint_comp.pdf"
+                <a href="https://ishaanshah.github.io/assets/pdfs/neural_glints_comp.pdf"
                    class="external-link button is-normal is-rounded is-dark">
                   <span class="icon">
                       <i class="fas fa-file-pdf"></i>
@@ -167,36 +167,24 @@
   </div>
 </section>
 
-<!-- <section class="section">
+<section class="section">
   <div class="container is-widescreen">
     <div class="columns is-centered has-text-centered">
       <div class="column is-full">
         <h2 class="title is-3">Results</h2>
         <div class="content has-text-justified">
-          We use three scenes with varying number and sizes of area lights
-          for the evaluation: (1) <b>Zero-Day, 10K lights</b>, (2) <b>Bistro Interior, 2K
-          lights</b> and (3) <b>Bistro Exterior, 30K lights</b>. For each scene, we test
-          the method on a diffuse and glossy version of the scene. We compare our results
-          against the following four methods:
-          <ul>
-            <li><b>Uniform</b>: Uniform light & uniform area sampling</li>
-            <li><b>ProjLTC</b>: Uniform light sampling & Projecte Solid Angle Sampling [Peters, 2021]</li>
-            <li><b>RIS</b>: RIS with uniform light & uniform area sampling [Tablot 2005, Bitterli 2020]</li>
-            <li><b>RIS-ProjLTC</b>: Naïve combination of RIS with ProjLTC</li>
-          </ul>
-        </div>
-        <div class="content" id="content-time">
-          <h4 class="title is-4">Equal Time Comparsion</h4>
-          <div class="image-box" id="image-box-time"></div>
-        </div>
-        <div class="content" id="content-sample">
-          <h4 class="title is-4">Equal Sample Comparsion</h4>
-          <div class="image-box" id="image-box-sample"></div>
+          We show a comparison between our method and [GGN18] on four different scenes.
+          Each scene uses a different environment map.
+          Our method has higher quality, uses lower memory and is more performant in all scenes.
+          The teaser scene features a surface with spatially varying roughness which is not supported by [GGN18].
+          We use ꟻLIP ([ANA*20]) to assess the quality of the results.
+        <div class="content" id="content-ggn18">
+          <div class="image-box" id="image-box-ggn18"></div>
         </div>
       </div>
     </div>
   </div>
-</section> -->
+</section>
 
 <section class="section">
   <div class="container is-widescreen">
@@ -205,7 +193,8 @@
         <h2 class="title is-3">References</h2>
         <div class="content has-text-justified">
           <ol>
-            <li>[GGN18] Gamboa L. E., Guertin J. P., Nowrouzezahrai D. Scalable appearance filtering for complex lighting effects. SIGGRAPH Asia 2018. <a href="https://doi.org/10/ggfg4g">doi:10/ggfg4g.</a></li>
+            <li>[ANA*20] Andersson P., Nilsson J., Akenine-Möller T., Oskarsson M., Åström K., Fairchild M. D.: ꟻLIP: A Difference Evaluator for Alternating Images. Proceedings of the ACM on Computer Graphics and Interactive Techniques, 2020, <a href="https://doi:10/gnbnp5">doi:10/gnbnp5</a></li>
+            <li>[GGN18] Gamboa L. E., Guertin J. P., Nowrouzezahrai D.: Scalable appearance filtering for complex lighting effects. SIGGRAPH Asia 2018. <a href="https://doi.org/10/ggfg4g">doi:10/ggfg4g.</a></li>
           </ol>
        </div>
       </div>
