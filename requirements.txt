@@ -1,0 +1,10 @@
+numpy
+opencv-python
+matplotlib
+tqdm
+ipdb
+typer
+natsort
+moviepy
+scikit-learn
+# pytorch	# Install based upon version needed
