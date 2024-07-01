@@ -4,8 +4,6 @@ for fast query of histogram during training
 or for GxD [Gamboa et al. 2018].
 """
 import mitsuba as mi
-mi.set_variant("cuda_rgb")
-
 import os
 import numpy as np
 import drjit as dr

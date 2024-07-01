@@ -7,4 +7,5 @@ typer
 natsort
 moviepy
 scikit-learn
-# pytorch	# Install based upon version needed
+pytorch
+git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
