@@ -1,3 +1,10 @@
+"""
+Trains the Neural Histogram to fit a given SAT table. This script
+will launches the actual fitting script which does the fitting.
+It will make use of all of the GPUs available to train parallely.
+Set the "CUDA_VISIBLE_DEVICES" environment variable if you want
+to limit the number of GPUs being used.
+"""
 import os
 import typer
 from argparse import ArgumentParser
