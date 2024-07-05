@@ -16,14 +16,12 @@ class GlintDummy(mi.BSDF):
             self.eta, self.k = complex_ior_from_file(self.material)
 
         self.alpha_mul: mi.Texture = mi.Texture.D65(props.get("alpha_mul", 1.0))
-        self.alpha_add: mi.Texture = mi.Texture.D65(props.get("alpha_add", 0.01))
         self.clearcoat_alpha: mi.Texture = mi.Texture.D65(props.get("clearcoat_alpha", 0.05))
         self.specular_reflectance: mi.Texture = props.get("specular_reflectance", mi.Texture.D65(1))
 
     def traverse(self, callback: mi.TraversalCallback):
         callback.put_object("alpha", self.alpha, mi.ParamFlags.Differentiable)
         callback.put_object("alpha_mul", self.alpha_mul, mi.ParamFlags.Differentiable)
-        callback.put_object("alpha_add", self.alpha_add, mi.ParamFlags.Differentiable)
         callback.put_object("glint_idx", self.glint_idx, mi.ParamFlags.Differentiable)
         callback.put_object("clearcoat_alpha", self.clearcoat_alpha, mi.ParamFlags.Differentiable)
     
@@ -33,8 +31,6 @@ class GlintDummy(mi.BSDF):
         k = self.k.eval(si, active)
         alpha = self.alpha.eval_1(si, active)
         alpha_mul = self.alpha_mul.eval_1(si, active)
-        alpha_add = self.alpha_add.eval_1(si, active)
-        # alpha = dr.fma(alpha, alpha_mul, alpha_add)
         alpha *= alpha_mul
         alpha = dr.clamp(alpha, 0.01, 0.99)
 
