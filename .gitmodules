@@ -1,0 +1,3 @@
+[submodule "kernels/ext/nanobind"]
+	path = kernels/ext/nanobind
+	url = https://github.com/wjakob/nanobind.git

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-export PYTHONPATH=.
+export PYTHONPATH=.:kernels/build
