@@ -83,17 +83,6 @@ float eval_sh(uint sh_idx, float2 pol, float* l_coeffs, uint n_theta) {
 }
 
 __device__
-float fast_rotation(uint sh_idx, float2 pol, float *bsdf_coeffs, float* l_coeffs, uint n_theta) {
-    int l = get_lm(sh_idx).x;
-
-    float  coeff = bsdf_coeffs[l];
-
-    // Rotate the given coeff
-    float nl = sqrtf(CUDART_PI_F * 4 / (2*l + 1));
-    return nl * eval_sh(sh_idx, pol, l_coeffs, n_theta) * coeff;
-}
-
-__device__
 float fast_rotation(uint sh_idx, float2 pol, float alpha, float *bsdf_coeffs, float* l_coeffs, uint n_theta) {
     int l = get_lm(sh_idx).x;
 
@@ -108,8 +97,6 @@ float fast_rotation(uint sh_idx, float2 pol, float alpha, float *bsdf_coeffs, fl
     float coeff = w * bsdf_coeffs[l*1000+lo] + (1-w)*bsdf_coeffs[l*1000+hi];
     if (lo == hi)
         coeff = bsdf_coeffs[l*1000+lo];
-
-    // float  coeff = bsdf_coeffs[l];
 
     // Rotate the given coeff
     float nl = sqrtf(CUDART_PI_F * 4 / (2*l + 1));

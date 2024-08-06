@@ -16,14 +16,12 @@ class GlintDummy(mi.BSDF):
             self.eta, self.k = complex_ior_from_file(self.material)
 
         self.alpha_mul: mi.Texture = mi.Texture.D65(props.get("alpha_mul", 1.0))
-        self.clearcoat_alpha: mi.Texture = mi.Texture.D65(props.get("clearcoat_alpha", 0.05))
         self.specular_reflectance: mi.Texture = props.get("specular_reflectance", mi.Texture.D65(1))
 
     def traverse(self, callback: mi.TraversalCallback):
         callback.put_object("alpha", self.alpha, mi.ParamFlags.Differentiable)
         callback.put_object("alpha_mul", self.alpha_mul, mi.ParamFlags.Differentiable)
         callback.put_object("glint_idx", self.glint_idx, mi.ParamFlags.Differentiable)
-        callback.put_object("clearcoat_alpha", self.clearcoat_alpha, mi.ParamFlags.Differentiable)
     
     # This function returns the FG term for the base layer
     def eval(self, ctx: mi.BSDFContext, si: mi.SurfaceInteraction3f, wo: mi.Vector3f, active: bool = True):
@@ -50,24 +48,8 @@ class GlintDummy(mi.BSDF):
         spec = self.specular_reflectance.eval(si, active)
         return spec * f * g / (4 * si.wi.z)
 
-    # This function returns the FG term for clearcoat layer
     def eval_pdf(self, ctx: mi.BSDFContext, si: mi.SurfaceInteraction3f, wo: mi.Vector3f, active: bool = True):
-        clearcoat_alpha = self.clearcoat_alpha.eval_1(si, active)
-        alpha = dr.clamp(clearcoat_alpha, 0.01, 0.99)
-
-        # Find half vector
-        m = dr.normalize(si.wi + wo)
-
-        # Find fresnel term
-        f = mi.Color3f(0)
-        for i in range(3):
-            f[i] = mi.fresnel_conductor(dr.dot(si.wi, m), mi.Complex2f(1.5, 1))
-
-        # Find shadowing
-        ndf = mi.MicrofacetDistribution(mi.MicrofacetType.Beckmann, alpha, sample_visible=False)
-        g = ndf.G(si.wi, wo, m)
-
-        return f * g / (4 * si.wi.z), mi.Float(1)
+        return mi.Color3f(0), mi.Float(1)
 
     def sample(self, ctx: mi.BSDFContext, si: mi.SurfaceInteraction3f, sample1: float, sample2: mi.Point2f, active: bool = True):
         bs = dr.zeros(mi.BSDFSample3f)

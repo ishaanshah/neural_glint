@@ -29,7 +29,6 @@ normals = mi.Vector3f(texture.reshape(-1, 3))
 
 texture_name = get_name(args.texture)[1]
 
-bin_edges, bin_centers = None, None
 bin_centers, bin_edges = calc_optimal_bins(dr.acos(normals.z).numpy(), args.ntheta)
 
 SAT = compute_sat(texture, args.ntheta, args.nphi, bin_edges)

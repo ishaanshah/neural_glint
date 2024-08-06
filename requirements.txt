@@ -1,3 +1,4 @@
+mitsuba
 numpy
 opencv-python
 matplotlib

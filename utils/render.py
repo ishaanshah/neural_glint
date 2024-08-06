@@ -141,3 +141,43 @@ def generate_rays(
         ray.scale_differential(diff_scale_factor)
 
     return ray, ray_weight, sample_pos
+
+def render_manual(
+    render_func: Callable[[mi.RayDifferential3f, mi.Scene], mi.Color3f],
+    scene: mi.Scene,
+    spp: int = None,
+    random_offset: bool=False,
+    pixel_offset: mi.Point2f=mi.Point2f(0.5),
+    seed: int=0,
+    **kwargs
+) -> mi.TensorXf:
+    ray, _, sample_pos = generate_rays(scene, spp, random_offset, pixel_offset, seed)
+
+    final_color = [mi.Float(0), mi.Float(0), mi.Float(0), mi.Float(1)]
+
+    ################################
+    # Rendering algorithm
+    ################################
+    res = render_func(ray, scene, **kwargs)
+    final_color[0] = res.x
+    final_color[1] = res.y
+    final_color[2] = res.z
+
+    # Develop the film
+    film: mi.Film  = scene.sensors()[0].film()
+    film.clear()
+
+    # Image block
+    block = film.create_block()
+    # Offset is the currect location of the block
+    # In case of GPU, the block covers the entire image, hence offset is 0
+    block.set_offset(film.crop_offset())
+
+    ################################
+    # Save image
+    ################################
+    block.put(sample_pos, final_color)
+    film.put_block(block)
+    img = film.develop()
+
+    return img

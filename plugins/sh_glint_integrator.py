@@ -8,7 +8,6 @@ import time
 from utils.render import generate_rays
 from utils.sh.gaussian import Gaussian
 from utils.sh.envmap import EnvmapHalf
-from utils.sat import bin_to_normal
 from tqdm import tqdm
 
 def load_coeffs(
@@ -49,7 +48,6 @@ def render_fastdot(
     envmap_path: str,    # Envmap details
     envmap_scale: float=1,
     envmap_proj_meth: str="mc",
-    clearcoat_weight: float=0,
     uv_scale: int=20,
     ntheta: int=9,
     nphi: int=32,
@@ -59,14 +57,9 @@ def render_fastdot(
     bin_centers: np.ndarray=None,
     fast_rotation: bool=True,
     alpha_common: float=0.05,
-    clearcoat_alpha_common: float=0.05,
-    render_clearcoat: bool=False
 ):
     if bin_centers is None:
         bin_centers = (np.pi / 2) * ((np.arange(ntheta, dtype=np.float32) + 0.5) / ntheta)
-    
-    if not render_clearcoat:
-        clearcoat_weight = 0
 
     # Load SH Coefficients of environment map
     bsdf_coeffs, emitter_coeffs, l_coeffs = load_coeffs(envmap_path, envmap_proj_meth, sh_order, fast_rotation, alpha_common)
@@ -82,8 +75,6 @@ def render_fastdot(
     # Prepare G buffers
     alpha = bsdf.eval_attribute_1("alpha", si)
     alpha_mul = bsdf.eval_attribute_1("alpha_mul", si)
-    clearcoat_alpha = bsdf.eval_attribute_1("clearcoat_alpha", si)
-    clearcoat_alpha = dr.clamp(clearcoat_alpha, 0.01, 0.99)
     alpha = dr.clamp(alpha*alpha_mul, 0.01, 0.99)
     to_uv = mi.Transform4f.scale([uv_scale, uv_scale, 1])
     uv = to_uv.transform_affine(mi.Point3f(si.uv.y, si.uv.x, 0))
@@ -101,11 +92,10 @@ def render_fastdot(
 
     # Evaluate this beforehand to avoid running the
     # ray-tracing kernel for each theta
-    dr.eval(uv, duv, wi_world, si.wi, onb_s, onb_t, onb_n, si.p, glint_pixels, alpha, clearcoat_alpha)
+    dr.eval(uv, duv, wi_world, si.wi, onb_s, onb_t, onb_n, si.p, glint_pixels, alpha)
     width = dr.width(uv)
 
     alpha = alpha.torch().reshape(resy, resx)
-    clearcoat_alpha = clearcoat_alpha.torch().reshape(resy, resx)
     glint_pixels = glint_pixels.torch().reshape(resy, resx)
     # If none are glint, treat all as glint
     if not torch.any(glint_pixels):
@@ -131,7 +121,6 @@ def render_fastdot(
     sat_query = sat_query[glint_mask]
     ctx = mi.BSDFContext()
 
-    ##### Base Layer
     total = torch.zeros(width, device="cuda:0", dtype=torch.float32)
     result = torch.zeros((resy, resx, nphi, 3), device="cuda:0")
     base_result = torch.zeros((width, nphi, 3), device="cuda:0", dtype=torch.float32)
@@ -169,40 +158,8 @@ def render_fastdot(
     base_result = base_result.reshape(-1, nphi, 3).sum(1)
     base_result = torch.maximum(base_result, torch.tensor(0, device="cuda"))
     base_result = torch.where(total.unsqueeze(-1) > 0, base_result / total.unsqueeze(-1), 0)
-    final_result = (1-clearcoat_weight) * (base_result * envmap_scale * fg)
-    #####
+    final_result = base_result * envmap_scale * fg
 
-    ##### Clearcoat layer
-    if render_clearcoat:
-        # Reload all coefficients with order 100
-        clearcoat_sh_order = 100
-        bsdf_coeffs, emitter_coeffs, l_coeffs = load_coeffs(
-            envmap_path, envmap_proj_meth,
-            clearcoat_sh_order, fast_rotation,
-            clearcoat_alpha_common, "gaussian"
-        )
-
-        clearcoat_result = torch.zeros((resy, resx, 3), device="cuda:0", dtype=torch.float32)
-        if fast_rotation:
-            fast_dot.render_half_fast_rotation(
-                onb_n, wi_world, clearcoat_alpha,
-                bsdf_coeffs, emitter_coeffs, l_coeffs,
-                clearcoat_result, clearcoat_sh_order
-            )
-        else:
-            fast_dot.render_half_lookup(
-                onb_n, wi_world,
-                bsdf_coeffs, emitter_coeffs,
-                clearcoat_result, clearcoat_sh_order
-            )
-        clearcoat_result = torch.maximum(clearcoat_result, torch.tensor(0, device="cuda"))
-        clearcoat_result = clearcoat_result.reshape(-1, 3)
-
-        # FG decoupling
-        wo = mi.reflect(si.wi)
-        fg = bsdf.eval_pdf(ctx, si, wo)[0].torch()
-        final_result += clearcoat_weight * fg * clearcoat_result * envmap_scale
-        
     # Put it into the film
     final_result = mi.Color3f(final_result)
     final_result = [final_result.x, final_result.y, final_result.z, mi.Float(1)]

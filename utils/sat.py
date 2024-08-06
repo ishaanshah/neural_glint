@@ -1,15 +1,9 @@
-import mitsuba as mi
-
 import numpy as np
-import drjit as dr
 import os
 import torch
 from sklearn.cluster import KMeans
 from typing import Tuple
-from utils.transforms import pol2cart
 from tqdm import trange
-
-import ipdb
 
 def open_sat(sat_dir: str, mmap_mode: str=None) -> Tuple[np.ndarray,np.ndarray,np.ndarray]:
     """
@@ -49,51 +43,6 @@ def calc_optimal_bins(x: np.ndarray, nbins: int,) -> Tuple[np.ndarray, np.ndarra
     bin_edges = np.concatenate([np.array([0]), bin_edges, np.array([x.max()])])
 
     return bin_centers, bin_edges
-
-def normal_to_bin(
-        normal: mi.Vector3f,
-        ntheta: int, nphi: int,
-        bin_edges: mi.Float=None,
-    ) -> mi.Point2u:
-    """
-    Returns the bin in which given normal lies in.
-    """
-    # Generate uniformly sized bins
-    if bin_edges is None:
-        bin_edges = dr.linspace(mi.Float, 0, dr.pi / 2, ntheta+1)
-
-    theta = dr.clip(dr.acos(normal[2]), 0, dr.pi / 2) # Since normals always point up we clip to np.pi/2
-    theta_idx = dr.binary_search(
-        0, ntheta,
-        lambda index: dr.gather(mi.Float, bin_edges, index) < theta
-    )
-    theta_idx = dr.maximum(mi.Int(theta_idx) - 1, 0)
-
-    phi = dr.atan2(normal[1], normal[0])
-    phi = dr.select(phi > 0, phi, phi + dr.pi * 2)
-    phi_idx = mi.UInt((phi / (2*dr.pi)) * nphi) % nphi
-
-    return mi.Point2u(theta_idx, phi_idx)
-
-def bin_to_normal(
-        theta_idx: mi.UInt, phi_idx: mi.UInt,
-        ntheta: int, nphi: int,
-        bin_centers: np.ndarray=None,
-    ) -> mi.Vector3f:
-    """
-    Returns the normal pointing towards center of given bin index.
-    """
-    dtheta = 1 / mi.Float(ntheta)
-    dphi = 1 / mi.Float(nphi)
-
-    # Generate uniformly sized bins
-    if bin_centers is None:
-        bin_centers = (dr.pi / 2) * dr.linspace(mi.Float, (dtheta / 2)[0], (1 - dtheta / 2)[0], ntheta)
-
-    theta = dr.gather(mi.Float, bin_centers, theta_idx)
-    phi = ((mi.Float(phi_idx) * dphi) + (dphi / 2)) * (2*dr.pi)
-
-    return pol2cart(mi.Point2f(theta, phi))
 
 def compute_sat(normals: np.ndarray, ntheta: int=9, nphi: int=32, bin_edges: np.ndarray=None) -> np.ndarray:
     res_x = normals.shape[0]
@@ -135,88 +84,6 @@ def compute_sat(normals: np.ndarray, ntheta: int=9, nphi: int=32, bin_edges: np.
             SAT[x,y] = SAT[x-1,y] + SAT[x,y-1] - SAT[x-1,y-1] + to_add
 
     return SAT
-
-def query_sat(
-    suv: mi.Point2f, euv: mi.Point2f,
-    pol_idx: mi.UInt, pres: mi.Point2u,
-    SAT: mi.Texture3f, active: bool=True
-) -> mi.UInt32:
-    """ Calculate sum where suv <= euv """
-    # Get the depth coordinate
-    w = (mi.Float(pol_idx) + 0.5) / mi.Float(pres.x * pres.y)
-
-    res = mi.Point2f(SAT.shape[:2])
-    duv = dr.rcp(res)
-
-    # Calculate sum
-    result = mi.Float(0)
-
-    result += SAT.eval(mi.Point3f(w, euv.x, euv.y))[0]
-    
-    vals = SAT.eval(mi.Point3f(w, suv.x-duv.x, euv.y))[0]
-    result -= dr.select(suv.x-duv.x > 0, vals, 0)    # sum -= SAT[x-1,Y]
-
-    vals = SAT.eval(mi.Point3f(w, euv.x, suv.y-duv.y))[0]
-    result -= dr.select(suv.y-duv.y > 0, vals, 0)    # sum -= SAT[X,y-1]
-
-    vals = SAT.eval(mi.Point3f(w, suv.x-duv.x, suv.y-duv.y))[0]
-    result += dr.select((suv.x-duv.x > 0) & (suv.y-duv.y > 0), vals, 0)   # sum += SAT[x-1,y-1]
-
-    return mi.UInt32(result)
-
-def get_histogram(
-    suv: mi.Point2f, duv: mi.Point2f,
-    pol_idx: mi.UInt, pres: mi.Point2u,
-    SAT: mi.Texture3f
-) -> mi.UInt32:
-    """
-    Calculate sum where 'suv' can be greater 'euv'.
-    Take care of wrapping, currently only 'repeat' mode is supported.
-    """
-    euv = suv + duv
-
-    nsuv = mi.Point2f(suv)
-    neuv = mi.Point2f(euv)
-
-    # Make it so that suv <= euv
-    swapx = duv.x < 0
-    nsuv.x = dr.select(swapx, euv.x, suv.x)
-    neuv.x = dr.select(swapx, suv.x, euv.x)
-
-    swapy = duv.y < 0
-    nsuv.y = dr.select(swapy, euv.y, suv.y)
-    neuv.y = dr.select(swapy, suv.y, euv.y)
-
-    # Get fractional part of texture
-    nsuv = nsuv - dr.floor(nsuv)
-    neuv = neuv - dr.floor(neuv)
-
-    # Size of texel
-    luv = dr.rcp(mi.Point2f(SAT.shape[:2]))
-
-    result = mi.UInt32(0)
-
-    # suv.x <= euv.x & suv.y <= euv.y
-    result += dr.select((nsuv.x <= neuv.x) & (nsuv.y <= neuv.y), query_sat(nsuv, neuv, pol_idx, pres, SAT), 0)
-
-    # nsuv.x > neuv.x & nsuv.y <= neuv.y
-    cond = (nsuv.x > neuv.x) & (nsuv.y <= neuv.y)
-    result += dr.select(cond, query_sat(nsuv, mi.Point2f(1-luv.x/2, neuv.y), pol_idx, pres, SAT), 0)
-    result += dr.select(cond, query_sat(mi.Point2f(0, nsuv.y), neuv, pol_idx, pres, SAT), 0)
-
-    # nsuv.x <= neuv.x & nsuv.y > neuv.y
-    cond = (nsuv.x <= neuv.x) & (nsuv.y > neuv.y)
-    result += dr.select(cond, query_sat(nsuv, mi.Point2f(neuv.x, 1-luv.y/2), pol_idx, pres, SAT), 0)
-    result += dr.select(cond, query_sat(mi.Point2f(nsuv.x, 0), neuv, pol_idx, pres, SAT), 0)
-    
-    # nsuv.x > neuv.x & nsuv.y > neuv.y
-    cond = (nsuv.x > neuv.x) & (nsuv.y > neuv.y)
-    result += dr.select(cond, query_sat(mi.Point2f(0, 0), neuv, pol_idx, pres, SAT), 0)
-    result += dr.select(cond, query_sat(nsuv, 1-luv/2, pol_idx, pres, SAT), 0)
-    result += dr.select(cond, query_sat(mi.Point2f(nsuv.x, 0), mi.Point2f(1-luv.x, neuv.y), pol_idx, pres, SAT), 0)
-    result += dr.select(cond, query_sat(mi.Point2f(0, nsuv.y), mi.Point2f(neuv.x, 1-luv.y), pol_idx, pres, SAT), 0)
-
-    return result
 
 class TorchSAT(torch.nn.Module):
     def __init__(self, sat: torch.Tensor):
